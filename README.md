@@ -76,4 +76,40 @@ The JavaScript syntax checks passed. The database smoke test could not be run
 here because no MongoDB server is listening locally; run the command above
 against a disposable test instance to verify server-side validation and index
 behavior.
+
+## Express feedback route prototype
+
+The separate `express-feedback` example accepts feedback for showcased projects
+at `POST /api/projects/:projectId/feedback`. It validates the author, trimmed
+message (up to 1000 characters), and integer rating (1–5). Request-ID/logging
+middleware labels each response and logs its status and duration; the final
+error middleware returns consistent JSON, including for malformed JSON bodies.
+The prototype keeps the project list in memory and does not persist feedback.
+
+Run it with Node.js 18 or newer:
+
+```sh
+cd express-feedback
+npm install
+npm start
+```
+
+Valid request (returns `201 Created`):
+
+```powershell
+curl.exe -i -X POST http://localhost:3000/api/projects/portfolio-site/feedback `
+  -H 'Content-Type: application/json' `
+  -d '{"author":"Ari","message":"Clear project showcase","rating":5}'
+```
+
+Invalid rating (returns `400 Bad Request` with validation details):
+
+```powershell
+curl.exe -i -X POST http://localhost:3000/api/projects/portfolio-site/feedback `
+  -H 'Content-Type: application/json' `
+  -d '{"author":"Ari","message":"Nice work","rating":6}'
+```
+
+Edge case: a message containing only spaces is trimmed and rejected as empty
+with `400 Bad Request`. Run the focused route tests with `npm test`.
 # mongo-schema
